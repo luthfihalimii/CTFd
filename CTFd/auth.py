@@ -38,9 +38,17 @@ auth = Blueprint("auth", __name__)
 @auth.route("/confirm/<data>", methods=["POST", "GET"])
 @ratelimit(method="POST", limit=10, interval=60)
 def confirm(data=None):
+    # If we can't send mails our behavior depends on verify_emails
     if not can_send_mail():
-        # If the CTF doesn't care about confirming email addresses then redierct to challenges
-        return redirect(url_for("challenges.listing"))
+        if get_config("verify_emails") is False:
+            return redirect(url_for("challenges.listing"))
+        else:
+            return render_template(
+                "confirm.html",
+                errors=[
+                    "Email verification is enabled but email sending isn't available. Please contact an admin to confirm your account"
+                ],
+            )
 
     # User is confirming email account
     if data and request.method == "GET":
@@ -60,10 +68,10 @@ def confirm(data=None):
             get_app_config("EMAIL_CONFIRMATION_REQUIRE_INTERACTION")
             and request.args.get("interaction") is None
         ):
-            button = """<button onclick="
+            button = """<button style="margin-top: 3rem; padding: 1rem;" onclick="
                 let u = new window.URL(window.location.href);
                 u.searchParams.set('interaction', '1');
-                window.location.href = u;">Confirm Email</button>"""
+                window.location.href = u;">Click Here to Confirm Email</button>"""
             return render_template("page.html", content=button)
 
         user.verified = True
