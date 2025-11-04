@@ -1,0 +1,3 @@
+[submodule "CTFd/themes/wmctf"]
+	path = CTFd/themes/wmctf
+	url = https://github.com/wm-team/ctfd-wmctf2025-theme.git
